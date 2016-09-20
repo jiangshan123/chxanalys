@@ -145,7 +145,50 @@ def circular_average(image, calibrated_center, threshold=0, nx=None,
 
     return bin_centers, ring_averages 
 
- 
+
+def plot__circular_average( qp, iq, q,  pargs, show_pixel=True,   save=False, *argv,**kwargs):
+
+        fig = Figure()
+        ax1 = fig.add_subplot(111)
+        uid = pargs['uid']
+        
+        if  show_pixel:  
+            ax1.semilogy(qp, iq, '-o')
+            ax1.set_xlabel('q (pixel)')  
+            ax1.set_ylabel('I(q)')
+            title = ax1.set_title('Uid= %s--Circular Average'%uid)  
+        else:
+            ax1.semilogy(q,  iq , '-o') 
+            ax1.set_xlabel('q ('r'$\AA^{-1}$)')        
+            ax1.set_ylabel('I(q)')
+            title = ax1.set_title('uid= %s--Circular Average'%uid)     
+            ax2=None 
+        
+                    
+        if 'xlim' in kwargs.keys():
+            ax1.set_xlim(    kwargs['xlim']  )    
+            x1,x2 =  kwargs['xlim']
+            w = np.where( (q >=x1 )&( q<=x2) )[0]                        
+            #if ax2 is not None:
+            #    ax2.set_xlim(  [ qp[w[0]], qp[w[-1]]]     )             
+        if 'ylim' in kwargs.keys():
+            ax1.set_ylim(    kwargs['ylim']  )        
+          
+        title.set_y(1.1)
+        fig.subplots_adjust(top=0.85)
+
+        if save:
+            #dt =datetime.now()
+            #CurTime = '%s%02d%02d-%02d%02d-' % (dt.year, dt.month, dt.day,dt.hour,dt.minute)
+            path = pargs['path']
+            #fp = path + 'Uid= %s--Circular Average'%uid + CurTime + '.png'     
+            fp = path + 'uid=%s--Circular-Average-'%uid  + '.png'  
+            fig.savefig( fp, dpi=fig.dpi)            
+            save_lists(  [q, iq], label=['q_A-1', 'Iq'],  filename='uid=%s-q-Iq'%uid, path= path  )
+        
+        plt.show()
+
+        
 
 def get_circular_average( avg_img, mask, pargs, show_pixel=True,  min_x=None, max_x=None,
                           nx=None, plot_ = False ,   save=False, *argv,**kwargs):   
@@ -945,7 +988,7 @@ def show_ring_ang_roi( data, rois,   alpha=0.3, save=False, *argv,**kwargs):
     
     
     
-def plot_qIq_with_ROI( q, iq, q_ring_center, logs=True, save=False, *argv,**kwargs):   
+def plot_qIq_with_ROI( q, iq, q_ring_center, logs=True, save=False, return_fig = False, *argv,**kwargs):   
     '''Aug 6, 2016, Y.G.@CHX 
     plot q~Iq with interested q rings'''
 
@@ -954,7 +997,9 @@ def plot_qIq_with_ROI( q, iq, q_ring_center, logs=True, save=False, *argv,**kwar
         uid = kwargs['uid'] 
         
     #Plot the circular average as a 
-    fig, axes = plt.subplots( figsize=(8, 6))
+    fig = Figure()
+    axes = fig.add_subplot(111)
+    
     if logs:
         axes.semilogy(q, iq, '-o')
     else:        
@@ -971,9 +1016,7 @@ def plot_qIq_with_ROI( q, iq, q_ring_center, logs=True, save=False, *argv,**kwar
     if 'xlim' in kwargs.keys():
          axes.set_xlim(    kwargs['xlim']  )    
     if 'ylim' in kwargs.keys():
-         axes.set_ylim(    kwargs['ylim']  )
- 
-        
+         axes.set_ylim(    kwargs['ylim']  )        
         
     num_rings = len( np.unique( q_ring_center) )
     for i in range(num_rings):
@@ -989,9 +1032,11 @@ def plot_qIq_with_ROI( q, iq, q_ring_center, logs=True, save=False, *argv,**kwar
             uid = 'uid'
         #fp = path + "uid= %s--Waterfall-"%uid + CurTime + '.png'     
         fp = path + "uid=%s--ROI-on-Iq-"%uid  + '.png'    
-        fig.savefig( fp, dpi=fig.dpi) 
+        plt.savefig( fp, dpi=fig.dpi) 
         
-    plt.show()
+    #plt.show()
+    if return_fig:
+        return fig  
 
 
     
@@ -1037,7 +1082,7 @@ def get_each_ring_mean_intensity( data_series, ring_mask, sampling, timeperframe
 
 
     
-def plot_saxs_g2( g2, taus, res_pargs=None, *argv,**kwargs):     
+def plot_saxs_g2( g2, taus, res_pargs=None, return_fig=False,tight=True,*argv,**kwargs):     
     '''plot g2 results, 
        g2: one-time correlation function
        taus: the time delays  
@@ -1086,30 +1131,33 @@ def plot_saxs_g2( g2, taus, res_pargs=None, *argv,**kwargs):
     
     if num_rings!=1:
 
-        fig = plt.figure(figsize=(12, 10))
+        fig = Figure()
+        #ax = fig.add_subplot(111
+        #fig = plt.figure(figsize=(12, 10))
         plt.axis('off')
-        #plt.axes(frameon=False)
-    
+        #plt.axes(frameon=False)    
         plt.xticks([])
-        plt.yticks([])
-        
+        plt.yticks([])        
         
     else:
-        fig = plt.figure(figsize=(8,8))
+        fig = Figure()
+        #ax = fig.add_subplot(111)   
+        #fig = plt.figure(figsize=(8,8))
         #print ('here')
     plt.title('uid=%s'%uid,fontsize=20, y =1.06)        
     for i in range(num_rings):
         ax = fig.add_subplot(sx, sy, i+1 )
         ax.set_ylabel("g2") 
-        ax.set_title(" Q= " + '%.5f  '%(q_ring_center[i]) + r'$\AA^{-1}$')
+        ax.set_title(" Q= " + '%.5f  '%(q_ring_center[i]) + r'$\AA^{-1}$' )#, fontsize=12)
         y=g2[:, i]
         ax.semilogx(taus, y, '-o', markersize=6) 
         #ax.set_ylim([min(y)*.95, max(y[1:])*1.05 ])
         if 'ylim' in kwargs:
             ax.set_ylim( kwargs['ylim'])
         elif 'vlim' in kwargs:
-            vmin, vmax =kwargs['vlim']
-            ax.set_ylim([min(y)*vmin, max(y[1:])*vmax ])
+            if kwargs['vlim'] is not None:
+                vmin, vmax =kwargs['vlim']
+                ax.set_ylim([min(y)*vmin, max(y[1:])*vmax ])
         else:
             pass
         if 'xlim' in kwargs:
@@ -1121,9 +1169,16 @@ def plot_saxs_g2( g2, taus, res_pargs=None, *argv,**kwargs):
                 
     #fp = path + 'g2--uid=%s'%(uid) + CurTime + '.png'
     fp = path + 'uid=%s--g2-'%(uid)   + '.png'
-    fig.savefig( fp, dpi=fig.dpi)        
-    fig.tight_layout()  
-    plt.show()               
+    if tight:
+        #fig.tight_layout()
+        fig.set_tight_layout(True)
+    plt.savefig( fp, dpi=fig.dpi)  
+
+    
+    #plt.show()
+    if return_fig:
+        return fig    
+    
  
 
 def plot_saxs_g4( g4, taus, res_pargs=None, *argv,**kwargs):     
@@ -1781,7 +1836,7 @@ def save_saxs_g2(  g2, res_pargs, taus=None, filename=None ):
 
 
 
-def fit_saxs_g2( g2, res_pargs=None, function='simple_exponential', *argv,**kwargs):    
+def fit_saxs_g2( g2, res_pargs=None, function='simple_exponential',  return_fig=False,tight=True,*argv,**kwargs):
     '''
     Aug 5,2016, Y.G.@CHX
     
@@ -1914,7 +1969,8 @@ def fit_saxs_g2( g2, res_pargs=None, function='simple_exponential', *argv,**kwar
     if num_rings!=1:
         
         #fig = plt.figure(figsize=(14, 10))
-        fig = plt.figure(figsize=(12, 10))
+        #fig = plt.figure(figsize=(12, 10))
+        fig = Figure()
         plt.axis('off')
         #plt.axes(frameon=False)
         #print ('here')
@@ -1923,7 +1979,8 @@ def fit_saxs_g2( g2, res_pargs=None, function='simple_exponential', *argv,**kwar
 
         
     else:
-        fig = plt.figure(figsize=(8,8))
+        #fig = plt.figure(figsize=(8,8))
+        fig = Figure()
         
     #fig = plt.figure(figsize=(8,8))
     plt.title('uid= %s'%uid,fontsize=20, y =1.06)   
@@ -1990,14 +2047,17 @@ def fit_saxs_g2( g2, res_pargs=None, function='simple_exponential', *argv,**kwar
          
     #fp = path + 'g2--uid=%s'%(uid) + CurTime + '--Fit.png'
     fp = path + 'uid=%s--g2'%(uid) + '--fit-.png'
-    fig.savefig( fp, dpi=fig.dpi)        
-    
-    fig.tight_layout()       
-    plt.show()
 
+    if tight:
+        #fig.tight_layout()
+        fig.set_tight_layout(True)
+    plt.savefig( fp, dpi=fig.dpi)     
     result = dict( beta=beta, rate=rate, alpha=alpha, baseline=baseline )
-    
-    return result
+
+    if return_fig:
+        return fig, result
+    else:
+        return result
 
 
 

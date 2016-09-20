@@ -1,3 +1,4 @@
+
 from chxanalys.chx_libs import *
 #from tqdm import *
 
@@ -175,7 +176,7 @@ def load_mask( path, mask_name, plot_ = False, *argv,**kwargs):
     """
     
     mask = np.load(    path +   mask_name )
-    mask = np.array(mask, dtype = np.int32)
+    #mask = np.array(mask, dtype = np.int32)
     if plot_:
         show_img( mask, *argv,**kwargs)   
     return mask
@@ -227,7 +228,7 @@ def RemoveHot( img,threshold= 1E7, plot_=True ):
 
 
 def show_img( image, ax=None,xlim=None, ylim=None, save=False,image_name=None,path=None, 
-             aspect=None, logs=False,vmin=None,vmax=None,
+             aspect=None, logs=False,vmin=None,vmax=None, return_fig=False,
              *argv,**kwargs ):    
     """a simple function to show image by using matplotlib.plt imshow
     pass *argv,**kwargs to imshow
@@ -242,7 +243,9 @@ def show_img( image, ax=None,xlim=None, ylim=None, save=False,image_name=None,pa
     """ 
     
     if ax is None:
-        fig, ax = plt.subplots()
+        fig = Figure()
+        ax = fig.add_subplot(111)
+        #fig, ax = plt.subplots()
     else:
         fig, ax=ax
         
@@ -251,9 +254,7 @@ def show_img( image, ax=None,xlim=None, ylim=None, save=False,image_name=None,pa
         im=ax.imshow(image, origin='lower' ,cmap='viridis',interpolation="nearest", vmin=vmin,vmax=vmax)  #vmin=0,vmax=1,
     else:
         im=ax.imshow(image, origin='lower' ,cmap='viridis',
-        interpolation="nearest" , norm=LogNorm(vmin,  vmax))        
-        
-        
+        interpolation="nearest" , norm=LogNorm(vmin,  vmax)) 
         
     fig.colorbar(im)
     ax.set_title( image_name )
@@ -271,12 +272,16 @@ def show_img( image, ax=None,xlim=None, ylim=None, save=False,image_name=None,pa
         #CurTime = '_%s%02d%02d-%02d%02d-' % (dt.year, dt.month, dt.day,dt.hour,dt.minute)         
         #fp = path + '%s'%( image_name ) + CurTime + '.png'       
         fp = path + '%s'%( image_name ) + '.png'    
-        fig.savefig( fp, dpi=fig.dpi) 
+        plt.savefig( fp, dpi=fig.dpi) 
         
-    plt.show()
+    #plt.show()
+
+    if return_fig:
+        return fig
+
     
     
-def plot1D( y,x=None, ax=None,*argv,**kwargs):    
+def plot1D( y,x=None, ax=None,return_fig=False, *argv,**kwargs):    
     """a simple function to plot two-column data by using matplotlib.plot
     pass *argv,**kwargs to plot
     
@@ -288,29 +293,54 @@ def plot1D( y,x=None, ax=None,*argv,**kwargs):
     -------
     None
     """     
+
     if ax is None:
-        fig, ax = plt.subplots()
+        fig = Figure()
+        ax = fig.add_subplot(111)
+        #fig, ax = plt.subplots()
+    else:
+        fig, ax=ax
+        
+        
     if 'legend' in kwargs.keys():
         legend =  kwargs['legend']  
     else:
         legend = ' '
+
+    try:
+         logx = kwargs['logx']
+    except:
+        logx=False
+    try:
+         logy = kwargs['logy']
+    except:
+        logy=False
+        
+    try:
+         logxy = kwargs['logxy']
+    except:
+        logxy= False        
+
+    if logx==True and logy==True:
+        logxy = True
         
     if x is None:
         ax.plot( y, marker = 'o', ls='-',label= legend)#,*argv,**kwargs)
-        if 'logx' in kwargs.keys():
-            ax.semilogx( y, marker = 'o', ls='-')#,*argv,**kwargs)   
-        elif 'logy' in kwargs.keys():
-            ax.semilogy( y, marker = 'o', ls='-')#,*argv,**kwargs) 
-        elif 'logxy' in kwargs.keys():
-            ax.loglog( y, marker = 'o', ls='-')#,*argv,**kwargs)             
+        if logx:
+            ax.semilogx( y, marker = 'o', ls='-')#,*argv,**kwargs)
+        if logy:
+            ax.semilogy( y, marker = 'o', ls='-')#,*argv,**kwargs)
+        if logxy:
+            ax.loglog( y, marker = 'o', ls='-')#,*argv,**kwargs)
     else:
-        ax.plot(x,y, marker='o',ls='-',label= legend)#,*argv,**kwargs) 
-        if 'logx' in kwargs.keys():
-            ax.semilogx( x,y, marker = 'o', ls='-')#,*argv,**kwargs)   
-        elif 'logy' in kwargs.keys():
-            ax.semilogy( x,y, marker = 'o', ls='-')#,*argv,**kwargs) 
-        elif 'logxy' in kwargs.keys():
-            ax.loglog( x,y, marker = 'o', ls='-')#,*argv,**kwargs)  
+        ax.plot(x,y, marker='o',ls='-',label= legend)#,*argv,**kwargs)        
+        if logx:
+            ax.semilogx( x,y, marker = 'o', ls='-')#,*argv,**kwargs)
+        if logy:
+            ax.semilogy( x,y, marker = 'o', ls='-')#,*argv,**kwargs)
+        if logxy:
+            ax.loglog( x,y, marker = 'o', ls='-')#,*argv,**kwargs)
+
     
     if 'xlim' in kwargs.keys():
          ax.set_xlim(    kwargs['xlim']  )    
@@ -336,9 +366,13 @@ def plot1D( y,x=None, ax=None,*argv,**kwargs):
             #CurTime = '%s%02d%02d-%02d%02d-' % (dt.year, dt.month, dt.day,dt.hour,dt.minute)         
             #fp = kwargs['path'] + '%s'%( title ) + CurTime + '.png'  
             fp = kwargs['path'] + '%s'%( title )   + '.png' 
-            fig.savefig( fp, dpi=fig.dpi) 
+            #fig.savefig( fp, dpi=fig.dpi)
+            plt.savefig( fp, dpi=fig.dpi) 
         
-      
+    #plt.show()
+
+    if return_fig:
+        return fig      
 
         
 ###
@@ -484,7 +518,9 @@ def show_label_array_on_image(ax, image, label_array, cmap=None,norm=None, log_i
     
     
 
-def show_ROI_on_image( image, ROI, center=None, rwidth=400,alpha=0.3,  label_on = True, save=False, *argv,**kwargs):
+def show_ROI_on_image( image, ROI, center=None, rwidth=400,alpha=0.3,  label_on = True,
+                       save=False, return_fig = False, rect_reqion=None,
+                       *argv,**kwargs):
     '''show ROI on an image
         image: the data frame
         ROI: the interested region
@@ -500,18 +536,26 @@ def show_ROI_on_image( image, ROI, center=None, rwidth=400,alpha=0.3,  label_on 
     vmax=5
     if 'vmax' in kwargs.keys():
         vmax = kwargs['vmax']
+
+    fig = Figure()
+    axes = fig.add_subplot(111)        
         
-    fig, axes = plt.subplots(figsize=(8,8))
+    
     axes.set_title("ROI on Image")
     im,im_label = show_label_array_on_image(axes, image, ROI, imshow_cmap='viridis',
                             cmap='Paired',alpha=alpha,
                              vmin=vmin, vmax=vmax,  origin="lower")
 
     #fig.colorbar(im)
-    #rwidth = 400 
-    if center is not None:
-        x1,x2 = [center[1] - rwidth, center[1] + rwidth]
-        y1,y2 = [center[0] - rwidth, center[0] + rwidth]
+    #rwidth = 400
+    if rect_reqion is  None:
+        if center is not None:
+            x1,x2 = [center[1] - rwidth, center[1] + rwidth]
+            y1,y2 = [center[0] - rwidth, center[0] + rwidth]
+            axes.set_xlim( [x1,x2])
+            axes.set_ylim( [y1,y2])
+    else:
+        x1,x2,y1,y2= rect_reqion
         axes.set_xlim( [x1,x2])
         axes.set_ylim( [y1,y2])
     
@@ -539,11 +583,12 @@ def show_ROI_on_image( image, ROI, center=None, rwidth=400,alpha=0.3,  label_on 
             uid = 'uid'
         #fp = path + "Uid= %s--Waterfall-"%uid + CurTime + '.png'     
         fp = path + "uid=%s--ROI-on-Image-"%uid  + '.png'    
-        fig.savefig( fp, dpi=fig.dpi)  
+        plt.savefig( fp, dpi=fig.dpi)  
     
-    plt.show()
+    #plt.show()
 
-        
+    if return_fig:
+        return fig       
 
         
 def crop_image(  image,  crop_mask  ):

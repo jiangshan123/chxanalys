@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 from chxanalys.chx_libs import (np, roi, time, datetime, os,  getpass, db, get_images,LogNorm)
 #from chxanalys.chx_generic_functions import (get_circular_average)
 from chxanalys.XPCS_SAXS import (get_circular_average)
+from matplotlib.figure import Figure
 
 import os
 from chxanalys.chx_generic_functions import ( save_arrays )
@@ -96,7 +97,7 @@ def cal_waterfallc(FD, labeled_array,   qindex=1, save=False, *argv,**kwargs):
     return watf
 
 
-def plot_waterfallc(wat, qindex=1, aspect = None,vmax=None, vmin=None,save=False, *argv,**kwargs):   
+def plot_waterfallc(wat, qindex=1, aspect = None,vmax=None, vmin=None,save=False, return_fig=False,*argv,**kwargs):   
     '''plot waterfall for a giving compressed file
     
        FD: class object, the compressed file handler
@@ -110,7 +111,9 @@ def plot_waterfallc(wat, qindex=1, aspect = None,vmax=None, vmin=None,save=False
     '''
     
     #wat = cal_waterfallc( FD, labeled_array, qindex=qindex)
-    fig, ax = plt.subplots(figsize=(8,6))
+    fig = Figure()
+    ax = fig.add_subplot(111)   
+    #fig, ax = plt.subplots(figsize=(8,6))
     ax.set_ylabel('Pixel')
     ax.set_xlabel('Frame')
     ax.set_title('Waterfall_Plot_@qind=%s'%qindex)
@@ -140,10 +143,11 @@ def plot_waterfallc(wat, qindex=1, aspect = None,vmax=None, vmin=None,save=False
             uid = 'uid'
         #fp = path + "uid= %s--Waterfall-"%uid + CurTime + '.png'     
         fp = path + "uid=%s--Waterfall-"%uid  + '.png'    
-        fig.savefig( fp, dpi=fig.dpi)
+        plt.savefig( fp, dpi=fig.dpi)
         
-    plt.show()
-    
+    #plt.show()
+    if return_fig:
+        return fig    
     
 
 

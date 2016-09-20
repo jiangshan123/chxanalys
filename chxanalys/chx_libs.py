@@ -46,6 +46,7 @@ from lmfit import  Model
 from lmfit import minimize, Parameters, Parameter, report_fit
  
 from matplotlib import gridspec
+from matplotlib.figure import Figure
 
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from tqdm import tqdm
