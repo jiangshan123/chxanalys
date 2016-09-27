@@ -572,7 +572,8 @@ def show_ROI_on_image( image, ROI, center=None, rwidth=400,alpha=0.3,  label_on 
             axes.text(x_val, y_val, c, va='center', ha='center')    
         
         
-    fig.colorbar(im_label)
+    #fig.colorbar(im_label)
+    fig.colorbar(im)
     if save:
         #dt =datetime.now()
         #CurTime = '%s%02d%02d-%02d%02d-' % (dt.year, dt.month, dt.day,dt.hour,dt.minute)             
@@ -588,7 +589,7 @@ def show_ROI_on_image( image, ROI, center=None, rwidth=400,alpha=0.3,  label_on 
     #plt.show()
 
     if return_fig:
-        return fig       
+        return fig, axes, im       
 
         
 def crop_image(  image,  crop_mask  ):
