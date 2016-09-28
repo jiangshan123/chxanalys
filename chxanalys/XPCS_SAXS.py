@@ -4,6 +4,18 @@ yuzhang@bnl.gov
 This module is for the SAXS XPCS analysis 
 """
 
+import itertools
+
+colors =  itertools.cycle(["blue", "darkolivegreen", "brown", "m", "orange", "hotpink", "darkcyan",  "red",
+            "gray", "green", "black", "cyan", "purple" , "navy"])
+
+colors_copy =  itertools.cycle(["blue", "darkolivegreen", "brown", "m", "orange", "hotpink", "darkcyan",  "red",
+            "gray", "green", "black", "cyan", "purple" , "navy"])
+
+markers = itertools.cycle( ["o", "2", "p", "1", "s", "*", "4",  "+", "8", "v","3", "D",  "H", "^",])
+markers_copy = itertools.cycle( ["o", "2", "p", "1", "s", "*", "4",  "+", "8", "v","3", "D",  "H", "^",])
+
+
 
 
 
@@ -1157,7 +1169,7 @@ def get_each_ring_mean_intensity( data_series, ring_mask, sampling, timeperframe
 
 
     
-def plot_saxs_g2( g2, taus, res_pargs=None, return_fig=False,tight=True,*argv,**kwargs):     
+def plot_saxs_g2( g2, taus, res_pargs=None,one_plot=False, ylabel='g2', return_fig=False,tight=True,*argv,**kwargs):     
     '''plot g2 results, 
        g2: one-time correlation function
        taus: the time delays  
@@ -1203,52 +1215,74 @@ def plot_saxs_g2( g2, taus, res_pargs=None, return_fig=False,tight=True,*argv,**
         sy=int(num_rings/sx+1)  
     
     #print (num_rings)
-    
-    if num_rings!=1:
+    if not one_plot:    
+        if num_rings!=1:
 
-        fig = Figure()
-        #ax = fig.add_subplot(111
-        #fig = plt.figure(figsize=(12, 10))
-        plt.axis('off')
-        #plt.axes(frameon=False)    
-        plt.xticks([])
-        plt.yticks([])        
-        
+            fig = Figure(  figsize=(12, 10)  )
+            #ax = fig.add_subplot(111
+            #fig = plt.figure(figsize=(12, 10))
+            plt.axis('off')
+            #plt.axes(frameon=False)    
+            plt.xticks([])
+            plt.yticks([])        
+            
+        else:
+            fig = Figure(  figsize=(8,8)  )
+            #ax = fig.add_subplot(111)   
+            #fig = plt.figure(figsize=(8,8))
+            #print ('here')
+        plt.title('uid=%s'%uid,fontsize=20, y =1.06)        
+        for i in range(num_rings):
+            ax = fig.add_subplot(sx, sy, i+1 )
+            ax.set_ylabel("g2") 
+            ax.set_title(" Q= " + '%.5f  '%(q_ring_center[i]) + r'$\AA^{-1}$' )#, fontsize=12)
+            y=g2[:, i]
+            ax.semilogx(taus, y, '-o', markersize=6) 
+            #ax.set_ylim([min(y)*.95, max(y[1:])*1.05 ])
+            if 'ylim' in kwargs:
+                ax.set_ylim( kwargs['ylim'])
+            elif 'vlim' in kwargs:
+                if kwargs['vlim'] is not None:
+                    vmin, vmax =kwargs['vlim']
+                    ax.set_ylim([min(y)*vmin, max(y[1:])*vmax ])
+            else:
+                pass
+            if 'xlim' in kwargs:
+                ax.set_xlim( kwargs['xlim'])
+
     else:
-        fig = Figure()
-        #ax = fig.add_subplot(111)   
-        #fig = plt.figure(figsize=(8,8))
-        #print ('here')
-    plt.title('uid=%s'%uid,fontsize=20, y =1.06)        
-    for i in range(num_rings):
-        ax = fig.add_subplot(sx, sy, i+1 )
-        ax.set_ylabel("g2") 
-        ax.set_title(" Q= " + '%.5f  '%(q_ring_center[i]) + r'$\AA^{-1}$' )#, fontsize=12)
-        y=g2[:, i]
-        ax.semilogx(taus, y, '-o', markersize=6) 
-        #ax.set_ylim([min(y)*.95, max(y[1:])*1.05 ])
+        
+        fig = Figure(figsize=(8,8))            
+        plt.title('uid=%s'%uid,fontsize=20, y =1.06) 
+        ax = fig.add_subplot(111 )
+        ax.set_ylabel(ylabel) 
+        for i in range(num_rings):
+            y=g2[:, i]
+            ax.semilogx(taus, y, '-%s'%next(markers), markersize=6, 
+                        label = "Q= " + '%.5f  '%(q_ring_center[i]) + r'$\AA^{-1}$') 
+            #ax.set_ylim([min(y)*.95, max(y[1:])*1.05 ])
         if 'ylim' in kwargs:
             ax.set_ylim( kwargs['ylim'])
         elif 'vlim' in kwargs:
-            if kwargs['vlim'] is not None:
-                vmin, vmax =kwargs['vlim']
-                ax.set_ylim([min(y)*vmin, max(y[1:])*vmax ])
+            vmin, vmax =kwargs['vlim']
+            ax.set_ylim([min(y)*vmin, max(y[1:])*vmax ])
         else:
             pass
         if 'xlim' in kwargs:
             ax.set_xlim( kwargs['xlim'])
+        plt.legend(loc='best', fontsize=6)        
+
  
  
     #dt =datetime.now()
     #CurTime = '%s%02d%02d-%02d%02d-' % (dt.year, dt.month, dt.day,dt.hour,dt.minute)        
                 
     #fp = path + 'g2--uid=%s'%(uid) + CurTime + '.png'
-    fp = path + 'uid=%s--g2-'%(uid)   + '.png'
+    fp = path + 'uid=%s--%s-'%(uid,ylabel)   + '.png'
     if tight:
         #fig.tight_layout()
         fig.set_tight_layout(True)
-    plt.savefig( fp, dpi=fig.dpi)  
-
+    plt.savefig( fp, dpi=fig.dpi) 
     
     #plt.show()
     if return_fig:
@@ -1309,7 +1343,7 @@ def plot_saxs_g4( g4, taus, res_pargs=None, return_fig=False, *argv,**kwargs):
     
     #print (num_rings)    
     if num_rings!=1:
-        fig=Figure()
+        fig=Figure( figsize=(12, 10) )
         #fig = plt.figure(figsize=(12, 10))
         plt.axis('off')
         #plt.axes(frameon=False)    
@@ -1317,7 +1351,7 @@ def plot_saxs_g4( g4, taus, res_pargs=None, return_fig=False, *argv,**kwargs):
         plt.yticks([])       
         
     else:
-        fig=Figure()
+        fig=Figure( figsize=(8,8) )
         #fig = plt.figure(figsize=(8,8))
         #print ('here')
     plt.title('uid=%s'%uid,fontsize=20, y =1.06)        
@@ -1424,7 +1458,7 @@ def plot_saxs_two_g2( g2, taus, g2b, tausb,res_pargs=None, return_fig=False, *ar
         
     else:
         #fig = plt.figure(figsize=(8,8))
-        fig = Figure()
+        fig = Figure( figsize=(8,8) )
     plt.title('uid=%s'%uid,fontsize=20, y =1.06)  
     plt.axis('off')
     for sn in range(num_rings):
@@ -1520,7 +1554,7 @@ def plot_saxs_rad_ang_g2( g2, taus, res_pargs=None, master_angle_plot= False, *a
         sec_var = num_qa
         
     for qr_ind in range( first_var  ):
-        fig = plt.figure(figsize=(10, 12))
+        fig = Figure(figsize=(10, 12))
         #fig = plt.figure()
         if master_angle_plot:
             title_qr = 'Angle= %.2f'%( ang_center[qr_ind]) + r'$^\circ$' 
@@ -1554,8 +1588,8 @@ def plot_saxs_rad_ang_g2( g2, taus, res_pargs=None, master_angle_plot= False, *a
             #    title = 'uid= %s:--->'%uid + title_qr + '__' +  title_qa
             #else:
             #    title = title_qa
-            title = title_qa    
-            ax.set_title( title , y =1.1) 
+            title = title_qa
+            ax.set_title( title , y =1.1, fontsize=12)             
             y=g2[:, i]
             ax.semilogx(taus, y, '-o', markersize=6)             
             
@@ -1575,12 +1609,11 @@ def plot_saxs_rad_ang_g2( g2, taus, res_pargs=None, master_angle_plot= False, *a
                 
         #fp = path + 'g2--uid=%s-qr=%s'%(uid,q_ring_center[qr_ind]) + CurTime + '.png'         
         fp = path + 'uid=%s--g2-qr=%s'%(uid, q_ring_center[qr_ind] )  + '-.png'
-        fig.savefig( fp, dpi=fig.dpi)        
+        plt.savefig( fp, dpi=fig.dpi)        
         fig.tight_layout()  
         plt.show()
 
-        
-        
+
 
 def stretched_auto_corr_scat_factor(x, beta, relaxation_rate, alpha=1.0, baseline=1):
     return beta * (np.exp(-2 * relaxation_rate * x))**alpha + baseline
@@ -2104,8 +2137,8 @@ def plot_fit_saxs_g2( g2, fit_res, fit_para_res, res_pargs=None,  return_fig=Fal
     if return_fig:
         return fig
 
-
-def fit_saxs_g2( g2, res_pargs=None, function='simple_exponential',  return_fig=False,tight=True,*argv,**kwargs):
+def fit_saxs_g2( g2, res_pargs=None, function='simple_exponential',  
+                one_plot=False, plot_g1=False,  return_fig=False, *argv,**kwargs):    
     '''
     Aug 5,2016, Y.G.@CHX
     
@@ -2213,9 +2246,13 @@ def fit_saxs_g2( g2, res_pargs=None, function='simple_exponential',  return_fig=
     #mod.set_param_hint( 'relaxation_rate', value = 0.005 )
     #mod.set_param_hint( 'baseline', value = 1.0, min=0.5, max= 1.5 )
     mod.set_param_hint( 'baseline',   min=0.5, max= 2.5 )
-    mod.set_param_hint( 'beta',   min=0.0,  max=1.0 )
+    mod.set_param_hint( 'beta',   min=0.0 )
     mod.set_param_hint( 'alpha',   min=0.0 )
-    mod.set_param_hint( 'relaxation_rate',   min=0.0,  max= 1000  )  
+    mod.set_param_hint( 'relaxation_rate',   min=0.0 )
+        
+        
+
+
     _guess_val = dict( beta=.1, alpha=1.0, relaxation_rate =0.005, baseline=1.0)
     
     if 'guess_values' in kwargs:         
@@ -2231,71 +2268,127 @@ def fit_saxs_g2( g2, res_pargs=None, function='simple_exponential',  return_fig=
     for v in _vars:
         pars['%s'%v].vary = False
         
-    if num_rings!=1:
-        
-        #fig = plt.figure(figsize=(14, 10))
-        #fig = plt.figure(figsize=(12, 10))
-        fig = Figure()
-        plt.axis('off')
-        #plt.axes(frameon=False)
-        #print ('here')
-        plt.xticks([])
-        plt.yticks([])
-
-        
+    if plot_g1:  
+        ylabel='g1'
     else:
-        #fig = plt.figure(figsize=(8,8))
-        fig = Figure()
+        ylabel='g2'
         
-    #fig = plt.figure(figsize=(8,8))
-    plt.title('uid= %s'%uid,fontsize=20, y =1.06)   
- 
-    for i in range(num_rings):
-        ax = fig.add_subplot(sx, sy, i+1 )
-        
-        if fit_range is not None:
-            y=g2[1:, i][fit_range[0]:fit_range[1]]
-            lags=taus[1:][fit_range[0]:fit_range[1]]
+    if not one_plot:
+        if num_rings!=1:
+            #fig = plt.figure(figsize=(14, 10))
+            fig = Figure(figsize=(12, 10))
+            plt.axis('off')
+            #plt.axes(frameon=False)
+            #print ('here')
+            plt.xticks([])
+            plt.yticks([])
+
         else:
-            y=g2[1:, i]
-            lags=taus[1:]
+            fig = Figure(figsize=(8,8))
 
-        
-        result1 = mod.fit(y, pars, x =lags )
-        
+        #fig = plt.figure(figsize=(8,8))
+        plt.title('uid= %s'%uid,fontsize=20, y =1.06)   
 
-        #print ( result1.best_values)
-        rate[i] = result1.best_values['relaxation_rate']
-        #rate[i] = 1e-16
-        beta[i] = result1.best_values['beta'] 
-        
-        #baseline[i] = 1.0
-        baseline[i] =  result1.best_values['baseline'] 
+        for i in range(num_rings):
+            ax = fig.add_subplot(sx, sy, i+1 )
 
-        if function=='simple_exponential' or function=='simple':
-            alpha[i] =1.0 
-        elif function=='stretched_exponential' or function=='stretched':
-            alpha[i] = result1.best_values['alpha']
+            if fit_range is not None:
+                y=g2[1:, i][fit_range[0]:fit_range[1]]
+                lags=taus[1:][fit_range[0]:fit_range[1]]
+            else:
+                y=g2[1:, i]
+                lags=taus[1:]
 
-        ax.semilogx(taus[1:], g2[1:, i], 'bo')
-        
-        ax.semilogx(lags, result1.best_fit, '-r')
-        
-        ax.set_title(" Q= " + '%.5f  '%(q_ring_center[i]) + r'$\AA^{-1}$')  
-        #ax.set_ylim([min(y)*.95, max(y[1:]) *1.05])
-        #ax.set_ylim([0.9999, max(y[1:]) *1.002])
-        txts = r'$\tau$' + r'$ = %.3f$'%(1/rate[i]) +  r'$ s$'
-        ax.text(x =0.02, y=.55, s=txts, fontsize=14, transform=ax.transAxes)     
-        txts = r'$\alpha$' + r'$ = %.3f$'%(alpha[i])  
-        #txts = r'$\beta$' + r'$ = %.3f$'%(beta[i]) +  r'$ s^{-1}$'
-        ax.text(x =0.02, y=.45, s=txts, fontsize=14, transform=ax.transAxes)  
 
-        txts = r'$baseline$' + r'$ = %.3f$'%( baseline[i]) 
-        ax.text(x =0.02, y=.35, s=txts, fontsize=14, transform=ax.transAxes) 
-        
-        txts = r'$\beta$' + r'$ = %.3f$'%(beta[i]) #+  r'$ s^{-1}$'    
-        ax.text(x =0.02, y=.25, s=txts, fontsize=14, transform=ax.transAxes) 
-    
+            result1 = mod.fit(y, pars, x =lags )
+
+
+            #print ( result1.best_values)
+            rate[i] = result1.best_values['relaxation_rate']
+            #rate[i] = 1e-16
+            beta[i] = result1.best_values['beta'] 
+
+            #baseline[i] = 1.0
+            baseline[i] =  result1.best_values['baseline'] 
+
+            if function=='simple_exponential' or function=='simple':
+                alpha[i] =1.0 
+            elif function=='stretched_exponential' or function=='stretched':
+                alpha[i] = result1.best_values['alpha']
+                
+            if plot_g1:
+                ax.semilogx(taus[1:], ( g2[1:, i] - baseline[i] )/beta[i], 'bo')
+                ax.semilogx(lags, (result1.best_fit- baseline[i] )/beta[i], '-r')            
+            else:
+                ax.semilogx(taus[1:], g2[1:, i], 'bo')
+                ax.semilogx(lags, result1.best_fit, '-r')
+
+            ax.set_title(" Q= " + '%.5f  '%(q_ring_center[i]) + r'$\AA^{-1}$')  
+            #ax.set_ylim([min(y)*.95, max(y[1:]) *1.05])
+            #ax.set_ylim([0.9999, max(y[1:]) *1.002])
+            txts = r'$\tau$' + r'$ = %.3f$'%(1/rate[i]) +  r'$ s$'
+            ax.text(x =0.02, y=.55, s=txts, fontsize=14, transform=ax.transAxes)     
+            txts = r'$\alpha$' + r'$ = %.3f$'%(alpha[i])  
+            #txts = r'$\beta$' + r'$ = %.3f$'%(beta[i]) +  r'$ s^{-1}$'
+            ax.text(x =0.02, y=.45, s=txts, fontsize=14, transform=ax.transAxes)  
+
+            txts = r'$baseline$' + r'$ = %.3f$'%( baseline[i]) 
+            ax.text(x =0.02, y=.35, s=txts, fontsize=14, transform=ax.transAxes) 
+
+            txts = r'$\beta$' + r'$ = %.3f$'%(beta[i]) #+  r'$ s^{-1}$'    
+            ax.text(x =0.02, y=.25, s=txts, fontsize=14, transform=ax.transAxes) 
+
+            if 'ylim' in kwargs:
+                ax.set_ylim( kwargs['ylim'])
+            elif 'vlim' in kwargs:
+                vmin, vmax =kwargs['vlim']
+                ax.set_ylim([min(y)*vmin, max(y[1:])*vmax ])
+            else:
+                ax.set_ylim([min(y)*.95, max(y[1:]) *1.05])
+            if 'xlim' in kwargs:
+                ax.set_xlim( kwargs['xlim'])
+
+    else:
+        fig = Figure(figsize=(8,8))
+        #fig = plt.figure(figsize=(8,8))
+        plt.title('uid= %s'%uid,fontsize=20, y =1.06)   
+        ax = fig.add_subplot(111 )
+        ax.set_ylabel(ylabel) 
+        for i in range(num_rings):
+            if fit_range is not None:
+                y=g2[1:, i][fit_range[0]:fit_range[1]]
+                lags=taus[1:][fit_range[0]:fit_range[1]]
+            else:
+                y=g2[1:, i]
+                lags=taus[1:]
+            result1 = mod.fit(y, pars, x =lags )
+            #print ( result1.best_values)
+            rate[i] = result1.best_values['relaxation_rate']
+            #rate[i] = 1e-16
+            beta[i] = result1.best_values['beta'] 
+            #baseline[i] = 1.0
+            baseline[i] =  result1.best_values['baseline'] 
+
+            if function=='simple_exponential' or function=='simple':
+                alpha[i] =1.0 
+            elif function=='stretched_exponential' or function=='stretched':
+                alpha[i] = result1.best_values['alpha']            
+           
+                
+            if plot_g1:
+                #print( baseline[i] , beta[i] )
+                y= (g2[1:, i] - baseline[i] )/beta[i]
+                ax.semilogx(taus[1:], y,
+                            next(markers),color=next(colors),
+                            label = "Q= " + '%.5f  '%(q_ring_center[i]) + r'$\AA^{-1}$' )
+                
+                ax.semilogx(lags, (result1.best_fit- baseline[i] )/beta[i], '-',
+                            color=next(colors_copy) )            
+            else:
+                ax.semilogx(taus[1:], g2[1:, i], 
+                    next(markers),label = "Q= " + '%.5f  '%(q_ring_center[i]) + r'$\AA^{-1}$' )
+                ax.semilogx(lags, result1.best_fit, '-r')             
+
         if 'ylim' in kwargs:
             ax.set_ylim( kwargs['ylim'])
         elif 'vlim' in kwargs:
@@ -2305,17 +2398,15 @@ def fit_saxs_g2( g2, res_pargs=None, function='simple_exponential',  return_fig=
             ax.set_ylim([min(y)*.95, max(y[1:]) *1.05])
         if 'xlim' in kwargs:
             ax.set_xlim( kwargs['xlim'])
-            
-
+                
+        plt.legend(loc='best', fontsize=10)
+                
     #dt =datetime.now()
     #CurTime = '%s%02d%02d-%02d%02d-' % (dt.year, dt.month, dt.day,dt.hour,dt.minute)        
          
     #fp = path + 'g2--uid=%s'%(uid) + CurTime + '--Fit.png'
-    fp = path + 'uid=%s--g2'%(uid) + '--fit-.png'
-
-    if tight:
-        #fig.tight_layout()
-        fig.set_tight_layout(True)
+    fp = path + 'uid=%s--%s) '%(uid,ylabel) + '--fit-.png'
+    fig.set_tight_layout(True)
     plt.savefig( fp, dpi=fig.dpi)     
     result = dict( beta=beta, rate=rate, alpha=alpha, baseline=baseline )
 
@@ -2379,15 +2470,15 @@ def fit_q_rate( q, rate, plot_=True, power_variable=False, *argv,**kwargs):
     
     print ('The fitted diffusion coefficient D0 is:  %.3e   A^2S-1'%D0)
     if plot_:
-        fig,ax = plt.subplots()        
+        fig,ax = plt.subplots(figsize=(8,8) )        
         plt.title('Q%s-Rate--uid= %s_Fit'%(power,uid),fontsize=20, y =1.06)  
         
         ax.plot(q**power,rate, 'bo')
         ax.plot(x**power, _result.best_fit,  '-r')
         
-        txts = r'$D0: %.3e$'%D0 + r' $A^2$' + r'$s^{-1}$'
+       txts = r'$D_0: %.3e$'%D0 + r' $A^2$' + r'$s^{-1}$'
         
-        ax.text(x =0.15, y=.75, s=txts, fontsize=14, transform=ax.transAxes)       
+        ax.text(x =0.05, y=.75, s=txts, fontsize=28, transform=ax.transAxes)       
         
         
         ax.set_ylabel('Relaxation rate 'r'$\gamma$'"($s^{-1}$)")
