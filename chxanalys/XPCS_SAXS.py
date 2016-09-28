@@ -2476,7 +2476,7 @@ def fit_q_rate( q, rate, plot_=True, power_variable=False, *argv,**kwargs):
         ax.plot(q**power,rate, 'bo')
         ax.plot(x**power, _result.best_fit,  '-r')
         
-       txts = r'$D_0: %.3e$'%D0 + r' $A^2$' + r'$s^{-1}$'
+        txts = r'$D_0: %.3e$'%D0 + r' $A^2$' + r'$s^{-1}$'
         
         ax.text(x =0.05, y=.75, s=txts, fontsize=28, transform=ax.transAxes)       
         
