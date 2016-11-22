@@ -8,7 +8,7 @@ import versioneer
 from setuptools import setup, find_packages
 
 setup(
-    name='chxanalys',
+    name='chxanalys_debug',
     version=versioneer.get_version(),
     cmdclass=versioneer.get_cmdclass(),
     author='Brookhaven National Laboratory_CHX',
