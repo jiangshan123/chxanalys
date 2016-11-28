@@ -16,7 +16,7 @@ from tqdm import tqdm
 import itertools
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
-from chxanalys.chx_libs import  ( mcolors,  markers, markers_copy, lstyles, Figure, RUN_GUI)
+from chxanalys_debug.chx_libs import  ( mcolors,  markers, markers_copy, lstyles, Figure, RUN_GUI)
 
 
 
