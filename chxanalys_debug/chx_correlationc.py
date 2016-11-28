@@ -874,6 +874,7 @@ def get_pixelist_interp_iq( qp, iq, ring_mask, center):
     return np.interp( r, qp, iq ) 
     
 
+    
 class Get_Pixel_Arrayc(object):
     '''
     a class to get intested pixels from a images sequence, 
