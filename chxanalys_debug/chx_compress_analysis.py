@@ -7,12 +7,12 @@ import struct
 
 import matplotlib.pyplot as plt
 
-from chxanalys.chx_libs import (np, roi, time, datetime, os,  getpass, db, get_images,LogNorm,Figure, RUN_GUI)
+from chxanalys_debug.chx_libs import (np, roi, time, datetime, os,  getpass, db, get_images,LogNorm,Figure, RUN_GUI)
 #from chxanalys.chx_generic_functions import (get_circular_average)
 #from chxanalys.XPCS_SAXS import (get_circular_average)
 
 import os
-from chxanalys.chx_generic_functions import ( save_arrays )
+from chxanalys_debug.chx_generic_functions import ( save_arrays )
 
 
 from skbeam.core.utils import multi_tau_lags
@@ -22,7 +22,7 @@ from collections import namedtuple
 import logging
 logger = logging.getLogger(__name__)
 
-from chxanalys.chx_compress import   (compress_eigerdata, read_compressed_eigerdata,init_compress_eigerdata, 
+from chxanalys_debug.chx_compress_debug import   (compress_eigerdata, read_compressed_eigerdata,init_compress_eigerdata, 
                                       Multifile,pass_FD,get_avg_imgc,mean_intensityc, get_each_frame_intensityc)
 
                                       
