@@ -3537,10 +3537,17 @@ def multi_uids_saxs_xpcs_analysis(   uids, md, run_num=1, sub_num=None, good_sta
                 md_ = imgs.md  
                 useful_uids[ run_seq + 1][i] = uid
                 if compress:
-                    filename = '/XF11ID/analysis/Compressed_Data' +'/uid_%s.cmp'%uid                     
-                    mask, avg_img, imgsum, bad_frame_list = compress_eigerdata(imgs, mask, md_, filename, 
-                                    force_compress= force_compress, bad_pixel_threshold= 5e9,nobytes=4,
-                                            para_compress=True, num_sub= 100)                     
+                    filename = '/XF11ID/analysis/Compressed_Data' +'/uid_%s.cmp'%uid   
+                    #update code here to use new pass uid to compress, 2016, Dec 3
+                    if False:
+                        mask, avg_img, imgsum, bad_frame_list = compress_eigerdata(imgs, mask, md_, filename, 
+                                    force_compress= force_compress, bad_pixel_threshold= 2.4e18,nobytes=4,
+                                            para_compress=True, num_sub= 100)  
+                    if True:
+                        mask, avg_img, imgsum, bad_frame_list = compress_eigerdata(uid,  mask, md_, filename, 
+                                    force_compress= True, bad_pixel_threshold= 2.4e18, nobytes=4,
+                                            para_compress= True, num_sub= 100, dtypes='uid', reverse=True  ) 
+                    
                     try:
                         md['Measurement']= db[uid]['start']['Measurement']
                         #md['sample']=db[uid]['start']['sample']     
