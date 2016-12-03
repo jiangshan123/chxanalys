@@ -970,13 +970,20 @@ def get_xsvs_fit(spe_cts_all, K_mean, varyK=True,
             
 
 def plot_xsvs_fit(  spe_cts_all, ML_val, KL_val, K_mean, xlim =[0,15], ylim=[1e-8,1], q_ring_center=None,
-                  uid='uid', qth=None,  times=None,fontsize=3):  
+                  uid='uid', qth=None,  times=None,fontsize=3, path=None):  
     
-    fig = plt.figure(figsize=(9, 6))
+    #if qth is None:
+    #    fig = plt.figure(figsize=(10,12))
+    #else:
+    #    fig = plt.figure(figsize=(8,8))
+        
+    fig = plt.figure()  
+    
     plt.title('uid= %s'%uid+" Fitting with Negative Binomial Function", fontsize=20, y=1.02)  
     plt.axes(frameon=False)
     plt.xticks([])
     plt.yticks([])
+    
     
     max_cts=  spe_cts_all[0][0].shape[0] -1    
     num_times, num_rings = spe_cts_all.shape   
@@ -999,6 +1006,8 @@ def plot_xsvs_fit(  spe_cts_all, ML_val, KL_val, K_mean, xlim =[0,15], ylim=[1e-
     else:
         sy=int(len(range_)/sx+1) 
     n = 1
+    if qth is not None:
+        fontsize =14
     for i in range_:         
         axes = fig.add_subplot(sx, sy,n )            
         axes.set_xlabel("K/<K>")
@@ -1022,22 +1031,35 @@ def plot_xsvs_fit(  spe_cts_all, ML_val, KL_val, K_mean, xlim =[0,15], ylim=[1e-
             else:
                 art, = axes.plot( fitx_,fitL, '-r')
                 #art, = axes.plot( fitx_,fity, '--b')
-            if i==0:  
+            if qth is None:
+                ith=0
+            else:
+                ith=qth
+            if i==ith:  
                 if times is not None:
-                    label =  str( times[j] * 1000)+" ms"
+                    label =  'Data--' + str( round(times[j] * 1000,3) )+" ms"                     
                 else:
                     label = 'Bin_%s'%(2**j)
+                     
                     
                 art, = axes.plot(x, y, 'o',  label= label)
             else:
                 art, = axes.plot( x, y, 'o',  )
 
-            axes.set_xlim( xlim )
-            axes.set_ylim( ylim)
+        axes.set_xlim( xlim )
+        axes.set_ylim( ylim)            
+        axes.set_title( "Q="+ '%.4f  '%(q_ring_center[i])+ r'$\AA^{-1}$')#, fontsize=12, y =1.0 )
+        axes.legend(loc='best', fontsize = fontsize)   
 
-            axes.set_title("Q="+ '%.4f  '%(q_ring_center[i])+ r'$\AA^{-1}$')
-            axes.legend(loc='best', fontsize = fontsize)
-    plt.show()
+    
+    if qth is None:
+        file_name =   'uid=%s--xsvs-fit'%(uid)
+    else:
+        file_name =   'uid=%s--xsvs-fit-q=%s'%(uid,qth)
+    fp = path + file_name  + '-.png'
+    plt.savefig( fp, dpi=fig.dpi)
+    
+    plt.show()    
     fig.tight_layout() 
     
 
@@ -1089,9 +1111,42 @@ def get_contrast( ML_val):
             contrast_factorL[i, j] =  1/ML_val[i][j]
     return contrast_factorL
 
+
+def get_K( KL_val):
+    nq,nt = len( KL_val.keys() ),  len( KL_val[list(KL_val.keys())[0]])
+    K_ = np.zeros( [ nq,nt] )
+    for i in range(nq):    
+        for j in range(nt):        
+            K_[i, j] =  KL_val[i][j]
+    return K_
+
+    
+def save_KM( K_mean, KL_val, ML_val, qs=None, uid=None, path=None ):
+    from pandas import DataFrame    
+    import os
+    kl = get_K( KL_val )
+    ml = get_contrast( ML_val)
+    L = K_mean.shape[0]
+    if qs is  None:
+        df = DataFrame(     np.hstack( [ (K_mean).reshape( L,1), kl.reshape( L,1),
+                                    contrast_factorL.reshape(L,1)   ] )  ) 
+        df.columns = ('K_mean', 'K_fit', 'Contrast_fit')
+    else:
+        qs = np.array( qs )
+        df = DataFrame(     np.hstack( [ qs.reshape( L,1), (K_mean).reshape( L,1), kl.reshape( L,1),
+                                    ml.reshape(L,1)   ] )  ) 
+        df.columns = ('q','K_mean', 'K_fit', 'Contrast_fit')
+        
+    filename = 'uid=%s--xsvs_fitted_KM.csv' %(uid)
+    filename1 = os.path.join(path, filename)
+    df.to_csv(filename1)
+    return df
+
     
     
-def plot_g2_contrast( contrast_factorL, g2, times, taus, q_ring_center=None, uid=None, vlim=[0.8,1.2], qth = None):
+    
+def plot_g2_contrast( contrast_factorL, g2, times, taus, q_ring_center=None, 
+                     uid=None, vlim=[0.8,1.2], qth = None, path = None):
     nq,nt = contrast_factorL.shape     
     
     if qth is not None:
@@ -1125,7 +1180,19 @@ def plot_g2_contrast( contrast_factorL, g2, times, taus, q_ring_center=None, uid
         #ym = np.mean( g )
         ax.set_ylim([ g.min() * vlim[0], g.max()* vlim[1] ])  
 
+    if qth is None:
+        file_name =   'uid=%s--contrast'%(uid)
+    else:
+        file_name =   'uid=%s--contrast-q=%s'%(uid,qth)
+        
+    fp = path + file_name  + '-.png'
+    plt.savefig( fp, dpi=fig.dpi)
+    
+    plt.show()    
     fig.tight_layout() 
+    
+        
+
    
     
     
