@@ -418,7 +418,6 @@ def init_compress_eigerdata( images, mask, md, filename,
 
  
 """    Description:
-
     This is code that Mark wrote to open the multifile format
     in compressed mode, translated to python.
     This seems to work for DALSA, FCCD and EIGER in compressed mode.
@@ -438,7 +437,6 @@ def init_compress_eigerdata( images, mask, md, filename,
     |--------------IMG N end----------------|
     |--------------IMG N+1 begin------------|
     |----------------etc.....---------------|
-
      
      Header contains 1024 bytes version name, 'beam_center_x', 'beam_center_y', 'count_time', 'detector_distance', 
            'frame_time', 'incident_wavelength', 'x_pixel_size', 'y_pixel_size', 
@@ -446,7 +444,6 @@ def init_compress_eigerdata( images, mask, md, filename,
            Nrows, Ncols, Rows_Begin, Rows_End, Cols_Begin, Cols_End, 
            
          
-
 """
 
 
@@ -681,7 +678,6 @@ def get_avg_imgc( FD,  beg=None,end=None,sampling = 100, plot_ = False, show_pro
 
 def mean_intensityc(FD, labeled_array,  sampling=1, index=None):
     """Compute the mean intensity for each ROI in the compressed file (FD)
-
     Parameters
     ----------
     FD: Multifile class
@@ -693,7 +689,6 @@ def mean_intensityc(FD, labeled_array,  sampling=1, index=None):
     index : int, list, optional
         The ROI's to use. If None, this function will extract averages for all
         ROIs
-
     Returns
     -------
     mean_intensity : array
@@ -812,18 +807,5 @@ def get_each_frame_intensityc( FD, sampling = 1,
     else:
         print ('No bad frames are involved.')
     return imgsum,bad_frame_list
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
